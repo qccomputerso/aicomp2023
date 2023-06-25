@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+service StrategyService {
+  rpc Play(stream GameRequest) returns (stream GameResponse);
+}
+enum Player {
+  INVALID = 0;
+  BLUE = 1;
+  RED = 2;
+  GREEN = 3;
+  YELLOW = 4;
+  SKY = 5;
+  PURPLE = 6;
+  GOLD = 7;
+  PINK = 8;
+  OBSERVER = 9;
+}
+message Cell {
+  bool is_mountain = 1;
+  Player player = 2;  // Indicates empty if is_mountain == false && player == 0
+  int32 num_soldiers = 3;
+  bool is_king = 4;
+  bool is_tower = 5;
+  bool is_visible = 6;
+}
+message Row {
+  repeated Cell cells = 1;
+}
+message Grid {
+  repeated Row rows = 1;
+}
+message Game {
+  repeated Player valid_players = 1;
+  repeated Player remaining_players = 2;
+  Player assigned_color = 3;
+  int32 width = 4;
+  int32 height = 5;
+  int32 game_length = 6;
+  int32 current_tick = 7;
+  Grid grid = 8;
+}
+message Coordinates {
+  int32 x = 1;
+  int32 y = 2;
+}
+message GridUpdate {
+  message CellUpdate {
+    Coordinates coordinates = 1;
+    Cell cell = 2;
+  }
+  repeated CellUpdate cell_updates = 1;
+}
+message PlayerUpdate {
+  Player player_defeated = 1;
+}
+message GameRequest {
+  oneof request_type {
+    bool should_act = 1;
+    Game initialize_game = 2;
+    bool tick = 3;
+    GridUpdate grid_update = 4;
+    PlayerUpdate player_update = 5;
+  }
+}
+message Move {
+  Coordinates move_from = 1;
+  Coordinates move_to = 2;
+  int32 num_soldiers_moved = 3;
+}
+message GameResponse {
+  Move move = 1;
+}
+message GameConfig {
+  message PlayerConfig {
+    Player player = 1;
+    int32 num_initial_soldiers = 2;
+  }
+  repeated PlayerConfig players = 1;
+  int32 width = 2;
+  int32 height = 3;
+  int32 game_length = 4;
+  int32 tower_initial_soldiers = 5;
+}
+
