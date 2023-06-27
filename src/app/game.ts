@@ -12,8 +12,8 @@ export enum Player {
   GREEN = 3,
   YELLOW = 4,
   SKY = 5,
-  PURPLE = 6,
-  GOLD = 7,
+  VIOLET = 6,
+  ORANGE = 7,
   PINK = 8,
   OBSERVER = 9,
   UNRECOGNIZED = -1,
@@ -40,11 +40,11 @@ export function playerFromJSON(object: any): Player {
     case "SKY":
       return Player.SKY;
     case 6:
-    case "PURPLE":
-      return Player.PURPLE;
+    case "VIOLET":
+      return Player.VIOLET;
     case 7:
-    case "GOLD":
-      return Player.GOLD;
+    case "ORANGE":
+      return Player.ORANGE;
     case 8:
     case "PINK":
       return Player.PINK;
@@ -72,10 +72,10 @@ export function playerToJSON(object: Player): string {
       return "YELLOW";
     case Player.SKY:
       return "SKY";
-    case Player.PURPLE:
-      return "PURPLE";
-    case Player.GOLD:
-      return "GOLD";
+    case Player.VIOLET:
+      return "VIOLET";
+    case Player.ORANGE:
+      return "ORANGE";
     case Player.PINK:
       return "PINK";
     case Player.OBSERVER:

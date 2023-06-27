@@ -1,16 +1,32 @@
-import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
-import { AppRoutingModule } from './app-routing.module';
+import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { AppComponent } from './app.component';
+import { GameListComponent } from './game-list/game-list.component';
+import { BotListComponent } from './bot-list/bot-list.component';
+import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
+import { MapListComponent } from './map-list/map-list.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    GameListComponent,
+    BotListComponent,
+    MapListComponent,
+    PageNotFoundComponent,
+    MapListComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    FormsModule,
+    RouterModule.forRoot([
+      { path: 'map-list', component: MapListComponent },
+      { path: 'game-list', component: GameListComponent },
+      { path: 'bot-list', component: BotListComponent },
+      { path: '', redirectTo: '/game-list', pathMatch: 'full' },
+      { path: '**', component: PageNotFoundComponent }
+    ]),
   ],
   providers: [],
   bootstrap: [AppComponent]

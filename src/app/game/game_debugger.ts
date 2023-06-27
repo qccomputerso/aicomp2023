@@ -1,4 +1,5 @@
 import * as proto from '../game'
+import { BG_COLORS } from '../constants';
 
 const NO_STYLE = 'background: none';
 const BORDER_STYLE = 'color: #FFF; background: #000; border: 2px solid transparent';
@@ -66,15 +67,15 @@ export class GameDebugger {
     const idx = isKing ? 1 : 0;
     const weight = isKing ? 'font-weight: bold; text-decoration: underline; ' : '';
     return [
-      'color: #999; background: #FFF;',
-      `color: #${COLOR_FFF[idx]}; background: #44E;`,
-      `color: #${COLOR_FFF[idx]}; background: #C00;`,
-      `color: #${COLOR_FFF[idx]}; background: #070;`,
-      `color: #${COLOR_000[idx]}; background: #FD0;`,
-      `color: #${COLOR_000[idx]}; background: #7CD;`,
-      `color: #${COLOR_FFF[idx]}; background: #909;`,
-      `color: #${COLOR_FFF[idx]}; background: #A60;`,
-      `color: #${COLOR_000[idx]}; background: #F9B;`,
+      `color: #999; background: ${BG_COLORS[idx]};`,
+      `color: #${COLOR_FFF[idx]}; background: ${BG_COLORS[idx]};`,
+      `color: #${COLOR_FFF[idx]}; background: ${BG_COLORS[idx]};`,
+      `color: #${COLOR_FFF[idx]}; background: ${BG_COLORS[idx]};`,
+      `color: #${COLOR_000[idx]}; background: ${BG_COLORS[idx]};`,
+      `color: #${COLOR_000[idx]}; background: ${BG_COLORS[idx]};`,
+      `color: #${COLOR_FFF[idx]}; background: ${BG_COLORS[idx]};`,
+      `color: #${COLOR_FFF[idx]}; background: ${BG_COLORS[idx]};`,
+      `color: #${COLOR_000[idx]}; background: ${BG_COLORS[idx]};`,
     ][player] + weight;
   }
 

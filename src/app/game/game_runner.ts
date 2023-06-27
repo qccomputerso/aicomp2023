@@ -11,18 +11,18 @@ export class GameRunner {
   private playerStrategies: Map<proto.Player, Strategy>;
   private playerViews: Map<proto.Player, proto.Grid>;
 
-  constructor(game: proto.Game, players: { player: proto.Player, strategy: Strategy }[]) {
+  constructor(game: proto.Game, players: Map<proto.Player, Strategy>) {
     this.game = game;
     this.debugger = new GameDebugger;
     this.players = [];
     this.remainingPlayers = [];
     this.playerStrategies = new Map;
     this.playerViews = new Map;
-    for (const player of players) {
-      this.players.push(player.player);
-      this.remainingPlayers.push(player.player);
-      this.playerStrategies.set(player.player, player.strategy);
-      this.playerViews.set(player.player, this.getPlayerFogOfWar(player.player, game.grid!));
+    for (const [player, strategy] of players) {
+      this.players.push(player);
+      this.remainingPlayers.push(player);
+      this.playerStrategies.set(player, strategy);
+      this.playerViews.set(player, this.getPlayerFogOfWar(player, game.grid!));
     }
   }
 
@@ -60,6 +60,7 @@ export class GameRunner {
   }
 
   private executeTick(tickNumber: number): void {
+    this.game.currentTick = tickNumber;
     // Announce
     for (const player of this.players) {
       this.playerStrategies.get(player)?.tick(tickNumber);

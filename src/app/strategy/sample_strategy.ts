@@ -2,14 +2,24 @@ import { Strategy } from './strategy'
 import * as proto from '../game'
 import { GameDebugger } from '../game/game_debugger';
 
-export enum MovePriority {
+export function create(config: string): Strategy {
+  let movePriority = MovePriority.NONE;
+  if (config == "1") {
+    movePriority = MovePriority.PRIORITIZE_EMPTY_ONLY;
+  } else if (config == "2") {
+    movePriority = MovePriority.PRIORITIZE_EMPTY_THEN_ATTACK;
+  }
+  return new SampleStrategy({ movePriority });
+}
+
+enum MovePriority {
   NONE, PRIORITIZE_EMPTY_ONLY, PRIORITIZE_EMPTY_THEN_ATTACK
 }
-export type SampleStrategyOptions = {
+type SampleStrategyOptions = {
   movePriority?: MovePriority,
 };
 
-export class SampleStrategy implements Strategy {
+class SampleStrategy implements Strategy {
   private game: proto.Game = proto.Game.create();
   private grid: proto.Grid = proto.Grid.create();
   private debugger: GameDebugger = new GameDebugger;

@@ -1,5 +1,9 @@
 syntax = "proto3";
 
+/*
+protoc  --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=. ./src/app/game.proto
+*/
+
 service StrategyService {
   rpc Play(stream GameRequest) returns (stream GameResponse);
 }
@@ -10,8 +14,8 @@ enum Player {
   GREEN = 3;
   YELLOW = 4;
   SKY = 5;
-  PURPLE = 6;
-  GOLD = 7;
+  VIOLET = 6;
+  ORANGE = 7;
   PINK = 8;
   OBSERVER = 9;
 }
