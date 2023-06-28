@@ -39,5 +39,8 @@
       <input type="text" class="form-control col-sm-3" [(ngModel)]="generatorConfig.numTower">
     </div>
     <button class="btn btn-primary" (click)="generate()">Generate</button>
+    <button class="btn btn-success" (click)="playGame()">Play</button>
+
+    <app-grid-renderer [grid]="grid"></app-grid-renderer>
   </div>
 </div>

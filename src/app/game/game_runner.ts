@@ -158,19 +158,21 @@ export class GameRunner {
 
   private getPlayerFogOfWar(player: proto.Player, grid: proto.Grid): proto.Grid {
     const playerGrid = proto.Grid.create();
-    const isOccupiedByPlayer = (x: number, y: number): boolean => {
-      return x >= 0 && y >= 0 && x < this.game.height && y < this.game.width
-        && grid.rows[x].cells[y].player == player;
+    const isOccupiedByPlayerOrMountain = (x: number, y: number): boolean => {
+      if (x < 0 || y < 0 || x >= this.game.height || y >= this.game.width) {
+        return false;
+      }
+      return grid.rows[x].cells[y].player == player;
     };
     for (let i = 0; i < this.game.height; ++i) {
       const row = [];
       for (let j = 0; j < this.game.width; ++j) {
-        let isVisible = false;
-        isVisible = isVisible || isOccupiedByPlayer(i, j);
-        isVisible = isVisible || isOccupiedByPlayer(i - 1, j);
-        isVisible = isVisible || isOccupiedByPlayer(i + 1, j);
-        isVisible = isVisible || isOccupiedByPlayer(i, j - 1);
-        isVisible = isVisible || isOccupiedByPlayer(i, j + 1);
+        let isVisible = grid.rows[i].cells[j].isMountain;
+        for (let dx = -1; dx <= 1 && !isVisible; ++dx) {
+          for (let dy = -1; dy <= 1; ++dy) {
+            isVisible = isVisible || isOccupiedByPlayerOrMountain(i + dx, j + dy);
+          }
+        }
         if (isVisible) {
           const cell = grid.rows[i].cells[j];
           row.push(proto.Cell.create({ isVisible: true, isMountain: cell.isMountain, isTower: cell.isTower, player: cell.player, numSoldiers: cell.numSoldiers }));

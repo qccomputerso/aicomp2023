@@ -7,21 +7,7 @@ import { BotConfig } from '../types';
 
 export class GameManager {
 
-  async newGame() {
-    const config = proto.GameConfig.create();
-    const nPlayers = 5;
-    config.width = 3 + nPlayers * 3;
-    config.height = 3 + nPlayers * 3;
-    config.gameLength = 1000;
-    config.towerInitialSoldiers = 20;
-    for (let i = 1; i <= nPlayers; ++i) {
-      config.players.push({ player: i, numInitialSoldiers: 10 + i });
-    }
-    const generator = new GameGenerator;
-    const game = generator.generate(config);
-
-    const debug = new GameDebugger;
-    debug.printGame(game);
+  async startGame(game: proto.Game) {
 
     const botConfigs = new Map<proto.Player, BotConfig>;
 
@@ -29,7 +15,7 @@ export class GameManager {
     botConfigs.set(proto.Player.RED, { strategy: 'sample_strategy', config: '10' });
     botConfigs.set(proto.Player.GREEN, { strategy: 'sample_strategy', config: '0' });
     botConfigs.set(proto.Player.YELLOW, { strategy: 'sample_strategy', config: '2' });
-    botConfigs.set(proto.Player.SKY, { strategy: 'sample_strategy', config: '0' });
+    // botConfigs.set(proto.Player.SKY, { strategy: 'sample_strategy', config: '0' });
 
     const bots = await this.getBots(botConfigs);
     const runner = new GameRunner(game, bots);

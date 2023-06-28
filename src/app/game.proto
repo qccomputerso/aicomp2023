@@ -74,15 +74,18 @@ message Move {
 message GameResponse {
   Move move = 1;
 }
+message GameMap {
+  repeated Player players = 1;
+  int32 width = 2;
+  int32 height = 3;
+  Grid grid = 4;
+}
 message GameConfig {
   message PlayerConfig {
     Player player = 1;
     int32 num_initial_soldiers = 2;
   }
   repeated PlayerConfig players = 1;
-  int32 width = 2;
-  int32 height = 3;
-  int32 game_length = 4;
-  int32 tower_initial_soldiers = 5;
+  GameMap game_map = 2;
+  int32 game_length = 3;
 }
-

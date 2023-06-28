@@ -1,0 +1,10 @@
+<div *ngIf="grid != null" class="grid">
+  <div *ngFor="let row of grid.rows" class="row">
+    <div *ngFor="let cell of row.cells" [class.tower]="cell.isTower" [class.mountain]="cell.isMountain"
+      [class.king]="cell.isKing" [style.color]="FG_COLORS[cell.player][cell.isKing ? 1 : 0]"
+      [style.background]=" cell.player ? BG_COLORS[cell.player] : ''">
+      <span *ngIf=" !cell.isMountain">{{ cell.isTower ? cell.numSoldiers : (cell.numSoldiers > 0 ? cell.numSoldiers :
+        '-') }}</span>
+    </div>
+  </div>
+</div>

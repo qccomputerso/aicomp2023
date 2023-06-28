@@ -151,12 +151,17 @@ export interface GameResponse {
   move: Move | undefined;
 }
 
-export interface GameConfig {
-  players: GameConfig_PlayerConfig[];
+export interface GameMap {
+  players: Player[];
   width: number;
   height: number;
+  grid: Grid | undefined;
+}
+
+export interface GameConfig {
+  players: GameConfig_PlayerConfig[];
+  gameMap: GameMap | undefined;
   gameLength: number;
-  towerInitialSoldiers: number;
 }
 
 export interface GameConfig_PlayerConfig {
@@ -1131,8 +1136,121 @@ export const GameResponse = {
   },
 };
 
+function createBaseGameMap(): GameMap {
+  return { players: [], width: 0, height: 0, grid: undefined };
+}
+
+export const GameMap = {
+  encode(message: GameMap, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    writer.uint32(10).fork();
+    for (const v of message.players) {
+      writer.int32(v);
+    }
+    writer.ldelim();
+    if (message.width !== 0) {
+      writer.uint32(16).int32(message.width);
+    }
+    if (message.height !== 0) {
+      writer.uint32(24).int32(message.height);
+    }
+    if (message.grid !== undefined) {
+      Grid.encode(message.grid, writer.uint32(34).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): GameMap {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGameMap();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag === 8) {
+            message.players.push(reader.int32() as any);
+
+            continue;
+          }
+
+          if (tag === 10) {
+            const end2 = reader.uint32() + reader.pos;
+            while (reader.pos < end2) {
+              message.players.push(reader.int32() as any);
+            }
+
+            continue;
+          }
+
+          break;
+        case 2:
+          if (tag !== 16) {
+            break;
+          }
+
+          message.width = reader.int32();
+          continue;
+        case 3:
+          if (tag !== 24) {
+            break;
+          }
+
+          message.height = reader.int32();
+          continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          message.grid = Grid.decode(reader, reader.uint32());
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GameMap {
+    return {
+      players: Array.isArray(object?.players) ? object.players.map((e: any) => playerFromJSON(e)) : [],
+      width: isSet(object.width) ? Number(object.width) : 0,
+      height: isSet(object.height) ? Number(object.height) : 0,
+      grid: isSet(object.grid) ? Grid.fromJSON(object.grid) : undefined,
+    };
+  },
+
+  toJSON(message: GameMap): unknown {
+    const obj: any = {};
+    if (message.players) {
+      obj.players = message.players.map((e) => playerToJSON(e));
+    } else {
+      obj.players = [];
+    }
+    message.width !== undefined && (obj.width = Math.round(message.width));
+    message.height !== undefined && (obj.height = Math.round(message.height));
+    message.grid !== undefined && (obj.grid = message.grid ? Grid.toJSON(message.grid) : undefined);
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<GameMap>, I>>(base?: I): GameMap {
+    return GameMap.fromPartial(base ?? {});
+  },
+
+  fromPartial<I extends Exact<DeepPartial<GameMap>, I>>(object: I): GameMap {
+    const message = createBaseGameMap();
+    message.players = object.players?.map((e) => e) || [];
+    message.width = object.width ?? 0;
+    message.height = object.height ?? 0;
+    message.grid = (object.grid !== undefined && object.grid !== null) ? Grid.fromPartial(object.grid) : undefined;
+    return message;
+  },
+};
+
 function createBaseGameConfig(): GameConfig {
-  return { players: [], width: 0, height: 0, gameLength: 0, towerInitialSoldiers: 0 };
+  return { players: [], gameMap: undefined, gameLength: 0 };
 }
 
 export const GameConfig = {
@@ -1140,17 +1258,11 @@ export const GameConfig = {
     for (const v of message.players) {
       GameConfig_PlayerConfig.encode(v!, writer.uint32(10).fork()).ldelim();
     }
-    if (message.width !== 0) {
-      writer.uint32(16).int32(message.width);
-    }
-    if (message.height !== 0) {
-      writer.uint32(24).int32(message.height);
+    if (message.gameMap !== undefined) {
+      GameMap.encode(message.gameMap, writer.uint32(18).fork()).ldelim();
     }
     if (message.gameLength !== 0) {
-      writer.uint32(32).int32(message.gameLength);
-    }
-    if (message.towerInitialSoldiers !== 0) {
-      writer.uint32(40).int32(message.towerInitialSoldiers);
+      writer.uint32(24).int32(message.gameLength);
     }
     return writer;
   },
@@ -1170,32 +1282,18 @@ export const GameConfig = {
           message.players.push(GameConfig_PlayerConfig.decode(reader, reader.uint32()));
           continue;
         case 2:
-          if (tag !== 16) {
+          if (tag !== 18) {
             break;
           }
 
-          message.width = reader.int32();
+          message.gameMap = GameMap.decode(reader, reader.uint32());
           continue;
         case 3:
           if (tag !== 24) {
             break;
           }
 
-          message.height = reader.int32();
-          continue;
-        case 4:
-          if (tag !== 32) {
-            break;
-          }
-
           message.gameLength = reader.int32();
-          continue;
-        case 5:
-          if (tag !== 40) {
-            break;
-          }
-
-          message.towerInitialSoldiers = reader.int32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -1211,10 +1309,8 @@ export const GameConfig = {
       players: Array.isArray(object?.players)
         ? object.players.map((e: any) => GameConfig_PlayerConfig.fromJSON(e))
         : [],
-      width: isSet(object.width) ? Number(object.width) : 0,
-      height: isSet(object.height) ? Number(object.height) : 0,
+      gameMap: isSet(object.gameMap) ? GameMap.fromJSON(object.gameMap) : undefined,
       gameLength: isSet(object.gameLength) ? Number(object.gameLength) : 0,
-      towerInitialSoldiers: isSet(object.towerInitialSoldiers) ? Number(object.towerInitialSoldiers) : 0,
     };
   },
 
@@ -1225,10 +1321,8 @@ export const GameConfig = {
     } else {
       obj.players = [];
     }
-    message.width !== undefined && (obj.width = Math.round(message.width));
-    message.height !== undefined && (obj.height = Math.round(message.height));
+    message.gameMap !== undefined && (obj.gameMap = message.gameMap ? GameMap.toJSON(message.gameMap) : undefined);
     message.gameLength !== undefined && (obj.gameLength = Math.round(message.gameLength));
-    message.towerInitialSoldiers !== undefined && (obj.towerInitialSoldiers = Math.round(message.towerInitialSoldiers));
     return obj;
   },
 
@@ -1239,10 +1333,10 @@ export const GameConfig = {
   fromPartial<I extends Exact<DeepPartial<GameConfig>, I>>(object: I): GameConfig {
     const message = createBaseGameConfig();
     message.players = object.players?.map((e) => GameConfig_PlayerConfig.fromPartial(e)) || [];
-    message.width = object.width ?? 0;
-    message.height = object.height ?? 0;
+    message.gameMap = (object.gameMap !== undefined && object.gameMap !== null)
+      ? GameMap.fromPartial(object.gameMap)
+      : undefined;
     message.gameLength = object.gameLength ?? 0;
-    message.towerInitialSoldiers = object.towerInitialSoldiers ?? 0;
     return message;
   },
 };

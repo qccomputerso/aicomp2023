@@ -1,5 +1,5 @@
 import * as proto from '../game'
-import { BG_COLORS } from '../constants';
+import { BG_COLORS, FG_COLORS } from '../constants';
 
 const NO_STYLE = 'background: none';
 const BORDER_STYLE = 'color: #FFF; background: #000; border: 2px solid transparent';
@@ -66,17 +66,7 @@ export class GameDebugger {
   private getPlayerColor(player: proto.Player, isKing: boolean = false): string {
     const idx = isKing ? 1 : 0;
     const weight = isKing ? 'font-weight: bold; text-decoration: underline; ' : '';
-    return [
-      `color: #999; background: ${BG_COLORS[idx]};`,
-      `color: #${COLOR_FFF[idx]}; background: ${BG_COLORS[idx]};`,
-      `color: #${COLOR_FFF[idx]}; background: ${BG_COLORS[idx]};`,
-      `color: #${COLOR_FFF[idx]}; background: ${BG_COLORS[idx]};`,
-      `color: #${COLOR_000[idx]}; background: ${BG_COLORS[idx]};`,
-      `color: #${COLOR_000[idx]}; background: ${BG_COLORS[idx]};`,
-      `color: #${COLOR_FFF[idx]}; background: ${BG_COLORS[idx]};`,
-      `color: #${COLOR_FFF[idx]}; background: ${BG_COLORS[idx]};`,
-      `color: #${COLOR_000[idx]}; background: ${BG_COLORS[idx]};`,
-    ][player] + weight;
+    return `color: ${FG_COLORS[player][idx]}; background: ${BG_COLORS[player]};` + weight;
   }
 
   private getFormattedNum(num: number): string {

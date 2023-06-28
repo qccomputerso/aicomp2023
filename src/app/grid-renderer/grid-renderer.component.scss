@@ -1,0 +1,36 @@
+.grid {
+  width: 400px;
+  height: 400px;
+  border-collapse: collapse;
+  display: flex;
+  flex-direction: column;
+
+  .row {
+    display: flex;
+    flex: 1;
+
+    div {
+      font-size: 10px;
+      text-align: center;
+      border: 2px dotted transparent;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      display: flex;
+
+      &.tower {
+        border: 2px dotted black;
+      }
+
+      &.mountain {
+        background: #444;
+      }
+
+      &.king {
+        font-weight: 800;
+        text-decoration: underline;
+        border: 2px solid black;
+      }
+    }
+  }
+}

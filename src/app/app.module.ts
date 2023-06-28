@@ -7,6 +7,7 @@ import { BotListComponent } from './bot-list/bot-list.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { MapListComponent } from './map-list/map-list.component';
 import { FormsModule } from '@angular/forms';
+import { GridRendererComponent } from './grid-renderer/grid-renderer.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { FormsModule } from '@angular/forms';
     BotListComponent,
     MapListComponent,
     PageNotFoundComponent,
-    MapListComponent
+    MapListComponent,
+    GridRendererComponent
   ],
   imports: [
     BrowserModule,
