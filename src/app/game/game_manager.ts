@@ -11,10 +11,10 @@ export class GameManager {
 
     const botConfigs = new Map<proto.Player, BotConfig>;
 
-    botConfigs.set(proto.Player.BLUE, { strategy: 'sample_strategy', config: '0' });
-    botConfigs.set(proto.Player.RED, { strategy: 'sample_strategy', config: '10' });
-    botConfigs.set(proto.Player.GREEN, { strategy: 'sample_strategy', config: '0' });
-    botConfigs.set(proto.Player.YELLOW, { strategy: 'sample_strategy', config: '2' });
+    botConfigs.set(proto.Player.BLUE, { description: 'sample', strategy: 'sample_strategy', config: '0' });
+    botConfigs.set(proto.Player.RED, { description: 'sample', strategy: 'sample_strategy', config: '10' });
+    botConfigs.set(proto.Player.GREEN, { description: 'sample', strategy: 'sample_strategy', config: '0' });
+    botConfigs.set(proto.Player.YELLOW, { description: 'sample', strategy: 'sample_strategy', config: '2' });
     // botConfigs.set(proto.Player.SKY, { strategy: 'sample_strategy', config: '0' });
 
     const bots = await this.getBots(botConfigs);

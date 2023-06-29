@@ -16,13 +16,26 @@ async function startServer() {
     db.all(query, [], (err, rows) => {
       res.send(rows);
     });
-  })
+  });
   app.route('/api/gamemap/save').post((req, res) => {
     const query = "INSERT INTO game_maps (`description`, `data`) VALUES (?, ?)";
     const statement = db.prepare(query);
     statement.bind(req.body.description, req.body.data).run();
     res.send({});
-  })
+  });
+
+  app.route('/api/bot/list').get((req, res) => {
+    const query = 'SELECT * FROM bots ORDER BY id DESC';
+    db.all(query, [], (err, rows) => {
+      res.send(rows);
+    });
+  });
+  app.route('/api/bot/save').post((req, res) => {
+    const query = "INSERT INTO bots (`description`, `strategy`, `config`) VALUES (?, ?, ?)";
+    const statement = db.prepare(query);
+    statement.bind(req.body.description, req.body.strategy, req.body.config).run();
+    res.send({});
+  });
 }
 
 startServer();

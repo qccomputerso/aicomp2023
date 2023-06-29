@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import * as proto from './game';
-import { GameMapRow } from './types';
+import { GameMapRow, BotRow, BotConfig } from './types';
 import { Buffer } from 'buffer';
 function encode(x: Uint8Array): string {
   return Buffer.from(x).toString('base64');
@@ -24,12 +24,20 @@ export class DataService {
   getGameMaps() {
     return this.http.get<GameMapRow[]>('/api/gamemap/list');
   }
-  //var b64 = Buffer.from(u8).toString('base64');
-  //var u8 = new Uint8Array(Buffer.from(b64, 'base64'))
+
   saveGameMap(gameMap: proto.GameMap) {
     return this.http.post('/api/gamemap/save', {
       'description': Date.now().toString(),
       'data': encode(proto.GameMap.encode(gameMap).finish())
     });
+  }
+
+
+  getBots() {
+    return this.http.get<BotRow[]>('/api/bot/list');
+  }
+
+  saveBot(botConfig: BotConfig) {
+    return this.http.post('/api/bot/save', botConfig);
   }
 }
