@@ -9,6 +9,7 @@ import { MapListComponent } from './map-list/map-list.component';
 import { FormsModule } from '@angular/forms';
 import { GridRendererComponent } from './grid-renderer/grid-renderer.component';
 import { HttpClientModule } from '@angular/common/http';
+import { PlayComponent } from './play/play.component';
 
 @NgModule({
   declarations: [
@@ -18,13 +19,15 @@ import { HttpClientModule } from '@angular/common/http';
     MapListComponent,
     PageNotFoundComponent,
     MapListComponent,
-    GridRendererComponent
+    GridRendererComponent,
+    PlayComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpClientModule,
     RouterModule.forRoot([
+      { path: 'play', component: PlayComponent },
       { path: 'map-list', component: MapListComponent },
       { path: 'game-list', component: GameListComponent },
       { path: 'bot-list', component: BotListComponent },
