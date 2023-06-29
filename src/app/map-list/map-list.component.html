@@ -30,26 +30,16 @@
       <div class="col-sm-12">
         <h3>Generate new map</h3>
         <div class="form-group row">
-          <label class="col-sm-3 col-form-label">Players</label>
-          <div class="col-sm-9 col-form-label">
-            R<input type="checkbox" class="form-control player-selector" [style.accentColor]="BG_COLORS[1]"
-              [(ngModel)]="generatorConfig.players[0]">
-            G<input type="checkbox" class="form-control player-selector" [style.accentColor]="BG_COLORS[2]"
-              [(ngModel)]="generatorConfig.players[1]">
-            B<input type="checkbox" class="form-control player-selector" [style.accentColor]="BG_COLORS[3]"
-              [(ngModel)]="generatorConfig.players[2]">
-            Y<input type="checkbox" class="form-control player-selector" [style.accentColor]="BG_COLORS[4]"
-              [(ngModel)]="generatorConfig.players[3]">
-            S<input type="checkbox" class="form-control player-selector" [style.accentColor]="BG_COLORS[5]"
-              [(ngModel)]="generatorConfig.players[4]">
-            V<input type="checkbox" class="form-control player-selector" [style.accentColor]="BG_COLORS[6]"
-              [(ngModel)]="generatorConfig.players[5]">
-            O<input type="checkbox" class="form-control player-selector" [style.accentColor]="BG_COLORS[7]"
-              [(ngModel)]="generatorConfig.players[6]">
-            P<input type="checkbox" class="form-control player-selector" [style.accentColor]="BG_COLORS[8]"
-              [(ngModel)]="generatorConfig.players[7]">
-
-          </div>
+          <label class="col-sm-2 col-form-label">Players</label>
+          <input type="number" class="form-control col-sm-2" [(ngModel)]="generatorConfig.numPlayers">
+          <div class="col-sm-1"></div>
+          <button class="btn btn-sm btn-primary col-sm-1" (click)="usePreset(2)">2</button>
+          <button class="btn btn-sm btn-primary col-sm-1" (click)="usePreset(3)">3</button>
+          <button class="btn btn-sm btn-primary col-sm-1" (click)="usePreset(4)">4</button>
+          <button class="btn btn-sm btn-primary col-sm-1" (click)="usePreset(5)">5</button>
+          <button class="btn btn-sm btn-primary col-sm-1" (click)="usePreset(6)">6</button>
+          <button class="btn btn-sm btn-primary col-sm-1" (click)="usePreset(7)">7</button>
+          <button class="btn btn-sm btn-primary col-sm-1" (click)="usePreset(8)">8</button>
         </div>
         <div class="form-group row">
           <label class="col-sm-3 col-form-label">Width</label>
@@ -73,10 +63,8 @@
     <div class="row">
       <div class="col-sm-12">
         <h3>Map viewer</h3>
-        <div class="form-group row">
-          <div class="col-sm-12">
-            <app-grid-renderer [grid]="grid"></app-grid-renderer>
-          </div>
+        <div class="col-sm-12">
+          <app-grid-renderer [grid]="grid"></app-grid-renderer>
         </div>
         <div class="form-group row">
           <label class="col-sm-3 col-form-label">Description</label>

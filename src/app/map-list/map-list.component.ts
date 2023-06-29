@@ -14,7 +14,7 @@ import { Buffer } from 'buffer';
 })
 export class MapListComponent {
   generatorConfig = {
-    players: [true, true, true, true, false, false, false, false],
+    numPlayers: 4,
     width: '20',
     height: '20',
     density: '75',
@@ -34,10 +34,8 @@ export class MapListComponent {
   public generate() {
     const generator = new GameGenerator;
     const players = [];
-    for (let i = 0; i < 8; ++i) {
-      if (this.generatorConfig.players[i]) {
-        players.push(proto.playerFromJSON(i + 1));
-      }
+    for (let i = 0; i < this.generatorConfig.numPlayers; ++i) {
+      players.push(proto.playerFromJSON(i + 1));
     }
     this.gameMap = generator.generate(proto.GameMap.create({
       players,
@@ -123,5 +121,19 @@ export class MapListComponent {
 
   public viewMap(gameMap: proto.GameMap) {
     this.grid = gameMap.grid!;
+  }
+
+  public usePreset(numPlayers: number) {
+    /*
+    2 players: 14x14, 65%, 10 towers
+  3 players: 16x16, 70%, 15 towers [tie breaker only]
+  4 players: 18x18, 75%, 20 towers
+  6 players: 20x20, 80%, 25 towers
+    */
+    this.generatorConfig.numPlayers = numPlayers;
+    this.generatorConfig.width = this.generatorConfig.height =
+      [0, 0, 14, 16, 18, 19, 20, 21, 22][numPlayers].toString();
+    this.generatorConfig.density = [0, 0, 65, 65, 70, 70, 75, 75, 80][numPlayers].toString();
+    this.generatorConfig.numTower = [0, 0, 10, 15, 20, 22, 25, 28, 30][numPlayers].toString();
   }
 }
