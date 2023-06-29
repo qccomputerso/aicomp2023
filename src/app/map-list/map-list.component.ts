@@ -4,7 +4,9 @@ import { GameGenerator } from '../game/game_generator';
 import * as proto from '../game';
 import { GameRunner } from '../game/game_runner';
 import { GameManager } from '../game/game_manager';
-
+import { DataService } from '../data.service';
+import { GameMapRow } from '../types';
+import { Buffer } from 'buffer';
 @Component({
   selector: 'app-map-list',
   templateUrl: './map-list.component.html',
@@ -20,8 +22,13 @@ export class MapListComponent {
   }
   gameMap: proto.GameMap | null = null;
   grid: proto.Grid | null = null;
+  gameMaps: { id: number, description: string, gameMap: proto.GameMap }[] = [];
 
   readonly BG_COLORS = BG_COLORS;
+
+  constructor(private data: DataService) {
+    this.loadGameMaps();
+  }
 
   public generate() {
     const generator = new GameGenerator;
@@ -41,6 +48,14 @@ export class MapListComponent {
     this.grid = this.gameMap.grid!;
 
 
+  }
+
+  public saveGameMap() {
+    if (this.gameMap) {
+      this.data.saveGameMap(this.gameMap).subscribe(() => {
+        this.loadGameMaps();
+      });
+    }
   }
 
   public playGame() {
@@ -82,5 +97,20 @@ export class MapListComponent {
       }
     }
     return game;
+  }
+
+  private loadGameMaps() {
+    this.data.getGameMaps()
+      .subscribe((rows: GameMapRow[]) => {
+        const gameMaps = [];
+        for (const { id, description, data } of rows) {
+          gameMaps.push({
+            id: id!,
+            description,
+            gameMap: proto.GameMap.decode(new Uint8Array(Buffer.from(data, 'base64')))
+          })
+        }
+        this.gameMaps = gameMaps;
+      });
   }
 }

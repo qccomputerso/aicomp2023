@@ -8,6 +8,7 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
 import { MapListComponent } from './map-list/map-list.component';
 import { FormsModule } from '@angular/forms';
 import { GridRendererComponent } from './grid-renderer/grid-renderer.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { GridRendererComponent } from './grid-renderer/grid-renderer.component';
   imports: [
     BrowserModule,
     FormsModule,
+    HttpClientModule,
     RouterModule.forRoot([
       { path: 'map-list', component: MapListComponent },
       { path: 'game-list', component: GameListComponent },

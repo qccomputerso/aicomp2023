@@ -1,6 +1,24 @@
 <div class="row">
   <div class="col-lg-7">
     <h3>Maps</h3>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Description</th>
+          <th>Size</th>
+          <th>Players</th>
+        </tr>
+      </thead>
+      <tbody *ngFor="let row of gameMaps">
+        <tr>
+          <td>{{ row.id }}</td>
+          <td>{{ row.description }}</td>
+          <td>{{ row.gameMap.height }} x {{ row.gameMap.width }}</td>
+          <td>{{ row.gameMap.players.length }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
   <div class="col-lg-5">
     <h3>Generate new map</h3>
@@ -39,6 +57,7 @@
       <input type="text" class="form-control col-sm-3" [(ngModel)]="generatorConfig.numTower">
     </div>
     <button class="btn btn-primary" (click)="generate()">Generate</button>
+    <button class="btn btn-warning" (click)="saveGameMap()">Save</button>
     <button class="btn btn-success" (click)="playGame()">Play</button>
 
     <app-grid-renderer [grid]="grid"></app-grid-renderer>

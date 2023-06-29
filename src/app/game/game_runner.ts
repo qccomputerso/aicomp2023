@@ -224,7 +224,7 @@ export class GameRunner {
         }
       }
       if (king) {
-        this.game.grid!.rows[king.x].cells[king.y].numSoldiers += Math.floor(Math.log2(numCells));
+        this.game.grid!.rows[king.x].cells[king.y].numSoldiers += Math.floor(Math.log2(numCells)) + 1;
       }
     }
     this.sendGridUpdates();
