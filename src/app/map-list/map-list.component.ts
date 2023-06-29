@@ -23,6 +23,7 @@ export class MapListComponent {
   gameMap: proto.GameMap | null = null;
   grid: proto.Grid | null = null;
   gameMaps: { id: number, description: string, gameMap: proto.GameMap }[] = [];
+  description: string = '';
 
   readonly BG_COLORS = BG_COLORS;
 
@@ -52,10 +53,16 @@ export class MapListComponent {
 
   public saveGameMap() {
     if (this.gameMap) {
-      this.data.saveGameMap(this.gameMap).subscribe(() => {
+      this.data.saveGameMap(this.gameMap, this.description).subscribe(() => {
         this.loadGameMaps();
       });
     }
+  }
+
+  public deleteGameMap(id: number) {
+    this.data.deleteGameMap(id).subscribe(() => {
+      this.loadGameMaps();
+    });
   }
 
   public playGame() {
@@ -112,5 +119,9 @@ export class MapListComponent {
         }
         this.gameMaps = gameMaps;
       });
+  }
+
+  public viewMap(gameMap: proto.GameMap) {
+    this.grid = gameMap.grid!;
   }
 }

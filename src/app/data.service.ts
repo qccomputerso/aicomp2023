@@ -25,13 +25,18 @@ export class DataService {
     return this.http.get<GameMapRow[]>('/api/gamemap/list');
   }
 
-  saveGameMap(gameMap: proto.GameMap) {
+  saveGameMap(gameMap: proto.GameMap, description: string) {
     return this.http.post('/api/gamemap/save', {
-      'description': Date.now().toString(),
-      'data': encode(proto.GameMap.encode(gameMap).finish())
+      description,
+      data: encode(proto.GameMap.encode(gameMap).finish())
     });
   }
 
+  deleteGameMap(id: number) {
+    return this.http.post('/api/gamemap/delete', {
+      id
+    });
+  }
 
   getBots() {
     return this.http.get<BotRow[]>('/api/bot/list');
@@ -39,5 +44,11 @@ export class DataService {
 
   saveBot(botConfig: BotConfig) {
     return this.http.post('/api/bot/save', botConfig);
+  }
+
+  deleteBot(id: number) {
+    return this.http.post('/api/bot/delete', {
+      id
+    });
   }
 }

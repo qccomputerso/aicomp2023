@@ -15,6 +15,7 @@ export class BotListComponent {
     config: '',
   }
   constructor(private data: DataService) {
+    this.loadBots();
   }
 
   public saveBot() {
@@ -31,4 +32,11 @@ export class BotListComponent {
         this.bots = rows;
       });
   }
+
+  public deleteBot(id: number) {
+    this.data.deleteBot(id).subscribe(() => {
+      this.loadBots();
+    });
+  }
+
 }

@@ -8,6 +8,7 @@
           <th>Description</th>
           <th>Strategy</th>
           <th>Config</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody *ngFor="let row of bots">
@@ -16,6 +17,9 @@
           <td>{{ row.description }}</td>
           <td>{{ row.strategy }}</td>
           <td>{{ row.config }}</td>
+          <td>
+            <button class="btn btn-sm btn-danger" (click)="deleteBot(row.id!)">Delete</button>
+          </td>
         </tr>
       </tbody>
     </table>
