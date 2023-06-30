@@ -150,12 +150,14 @@ export class GameRunner {
       toCell.numSoldiers += move.numSoldiersMoved;
     } else {
       toCell.numSoldiers -= move.numSoldiersMoved;
-      if (toCell.numSoldiers == 0) {
-        toCell.player = proto.Player.INVALID;
-      } else if (toCell.numSoldiers < 0) {
-        toCell.numSoldiers = -toCell.numSoldiers;
+      if (toCell.numSoldiers <= 0) {
         const attackedPlayer = toCell.player;
-        toCell.player = player;
+        toCell.numSoldiers = -toCell.numSoldiers;
+        if (toCell.numSoldiers < 0) {
+          toCell.player = player;
+        } else {
+          toCell.player = proto.Player.INVALID;
+        }
         if (toCell.isKing) {
           this.handleElimination(player, attackedPlayer);
           toCell.isKing = false;
