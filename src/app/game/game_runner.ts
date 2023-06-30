@@ -152,8 +152,8 @@ export class GameRunner {
       toCell.numSoldiers -= move.numSoldiersMoved;
       if (toCell.numSoldiers <= 0) {
         const attackedPlayer = toCell.player;
-        toCell.numSoldiers = -toCell.numSoldiers;
         if (toCell.numSoldiers < 0) {
+          toCell.numSoldiers = -toCell.numSoldiers;
           toCell.player = player;
         } else {
           toCell.player = proto.Player.INVALID;
