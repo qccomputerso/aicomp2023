@@ -6,11 +6,12 @@ import { catchError, retry } from 'rxjs/operators';
 import * as proto from './game';
 import { GameMapRow, BotRow, BotConfig } from './types';
 import { Buffer } from 'buffer';
-function encode(x: Uint8Array): string {
+
+export function encode(x: Uint8Array): string {
   return Buffer.from(x).toString('base64');
 }
 
-function decode(y: string) {
+export function decode(y: string) {
   return "";
 }
 

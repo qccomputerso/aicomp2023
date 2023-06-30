@@ -26,3 +26,11 @@
 #content-wrapper {
     padding-top: 16px;
 }
+
+.toasts {
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
+    width: 300px;
+    z-index: 999;
+}

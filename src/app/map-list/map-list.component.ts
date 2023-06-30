@@ -3,7 +3,6 @@ import { BG_COLORS } from '../constants';
 import { GameGenerator } from '../game/game_generator';
 import * as proto from '../game';
 import { GameRunner } from '../game/game_runner';
-import { GameManager } from '../game/game_manager';
 import { DataService } from '../data.service';
 import { GameMapRow } from '../types';
 import { Buffer } from 'buffer';
@@ -61,25 +60,6 @@ export class MapListComponent {
     this.data.deleteGameMap(id).subscribe(() => {
       this.loadGameMaps();
     });
-  }
-
-  public playGame() {
-    if (!this.gameMap) {
-      return;
-    }
-    const gameConfig = proto.GameConfig.create({
-      gameMap: this.gameMap,
-      gameLength: 1000,
-      players: [
-        { player: proto.Player.RED, numInitialSoldiers: 10 },
-        { player: proto.Player.BLUE, numInitialSoldiers: 11 },
-        { player: proto.Player.GREEN, numInitialSoldiers: 12 },
-        { player: proto.Player.YELLOW, numInitialSoldiers: 13 },
-      ]
-    });
-    const game = this.convertToGame(gameConfig);
-    const gameManager = new GameManager();
-    gameManager.startGame(game);
   }
 
   private convertToGame(gameConfig: proto.GameConfig): proto.Game {

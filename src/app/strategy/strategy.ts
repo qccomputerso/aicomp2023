@@ -6,4 +6,5 @@ export interface Strategy {
   handleGridUpdate(gridUpdate: proto.GridUpdate): void;
   handlePlayerUpdate(playerUpdate: proto.PlayerUpdate): void;
   performAction(): proto.Move | null;
+  debug(): void;
 }

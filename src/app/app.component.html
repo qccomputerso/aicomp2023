@@ -1,3 +1,16 @@
+<div aria-live="polite" aria-atomic="true" class="toasts">
+  <ng-container *ngFor="let message of messages">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="opacity: 1">
+      <div class="toast-header">
+        <strong class="mr-auto">Alert</strong>
+      </div>
+      <div class="toast-body">
+        {{ message }}
+      </div>
+    </div>
+  </ng-container>
+</div>
+
 <!-- Page Wrapper -->
 <div id="wrapper">
 

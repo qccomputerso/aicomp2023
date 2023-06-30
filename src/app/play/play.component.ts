@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import * as proto from '../game';
-import { DataService } from '../data.service';
+import { DataService, encode } from '../data.service';
 import { GameMapRow, BotRow } from '../types';
 import { Buffer } from 'buffer';
 import { BG_COLORS, FG_COLORS } from '../constants';
+import { MessageService } from '../message.service';
 @Component({
   selector: 'app-play',
   templateUrl: './play.component.html',
@@ -16,12 +17,13 @@ export class PlayComponent {
   selectedBots: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
   selectedLength: number = 1000;
   selectedNumInitialSoldiers: number[] = [10, 10, 10, 10, 10, 10, 10, 10];
+  gameConfig: proto.GameConfig | null = null;
 
   readonly getPlayerName = proto.playerFromJSON;
   readonly BG_COLORS = BG_COLORS;
   readonly FG_COLORS = FG_COLORS;
 
-  constructor(private data: DataService) {
+  constructor(private data: DataService, private message: MessageService) {
     this.loadGameMaps();
     this.loadBots();
 
@@ -54,7 +56,30 @@ export class PlayComponent {
   }
 
   playGame() {
-    const gameMap = this.gameMaps[this.selectedMap];
+    this.gameConfig = this.getGameConfig();
+    window.localStorage.setItem('game_config', encode(proto.GameConfig.encode(this.gameConfig).finish()));
+  }
+
+  loadLastConfig() {
+    const data = window.localStorage.getItem('game_config');
+    if (!data) {
+      this.message.addMessage("No game config data saved in local storage.");
+      return;
+    }
+    try {
+      this.gameConfig = proto.GameConfig.decode(new Uint8Array(Buffer.from(data, 'base64')));
+    } catch (e) {
+      this.message.addMessage("Error decoding game config data in local storage.");
+      return;
+    }
+  }
+
+  private getGameConfig() {
+    const gameMap = this.gameMaps.find(({ id }) => id == this.selectedMap)!.gameMap;
+    const numPlayers = this.selectedBots.filter((id) => id != 0).length;
+    if (gameMap.players.length != numPlayers) {
+      this.message.addMessage("Number of bots should match the number of players in the Map.");
+    }
     const playerConfigs = [];
     for (let i = 0; i < 8; ++i) {
       if (this.selectedBots[i]) {
@@ -62,6 +87,7 @@ export class PlayComponent {
         const playerConfig = proto.GameConfig_PlayerConfig.create({
           player: proto.playerFromJSON(i + 1),
           numInitialSoldiers: this.selectedNumInitialSoldiers[i],
+          description: bot.description,
           strategy: bot.strategy,
           config: bot.config
         });
@@ -70,8 +96,9 @@ export class PlayComponent {
     }
     const gameConfig = proto.GameConfig.create({
       gameLength: this.selectedLength,
-      gameMap: this.gameMaps.find(({ id }) => id == this.selectedMap)!.gameMap,
+      gameMap,
       players: playerConfigs
     });
+    return gameConfig;
   }
 }

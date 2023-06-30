@@ -34,13 +34,11 @@ class SampleStrategy implements Strategy {
   init(game: proto.Game): void {
     this.game = game;
     this.grid = game.grid!;
-    this.debugger.printGame(game);
   }
 
   tick(tickNumber: number) {
     this.game.currentTick = tickNumber;
     if (tickNumber == this.game.gameLength) {
-      // this.debugger.printGame(this.game);
     }
   }
 
@@ -98,6 +96,10 @@ class SampleStrategy implements Strategy {
       }
     }
     return bestMove;
+  }
+
+  debug(): void {
+    this.debugger.printGame(this.game);
   }
 
   private scoreMove(move: proto.Move): number {

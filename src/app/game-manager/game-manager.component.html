@@ -1,0 +1,33 @@
+<hr>
+<div class="row">
+  <div class="col-sm-12">
+    <div class="row">
+      <div class="col-sm-2">Debug</div>
+      <div class="col-sm-1 text-center" *ngFor="let item of isActivePlayer; let i = index; trackBy: trackByIndex">
+        <ng-container *ngIf="item">
+          <span>{{ botConfigs.get(i + 1)!.description }}</span><br>
+          <button class="btn btn-info btn-sm" (click)="gameDebug(i + 1)">Debug</button>
+        </ng-container>
+      </div>
+    </div>
+    <div class="row" *ngIf="game != null">
+      <div class="col-sm-2" style="padding-top: 6px; padding-bottom: 6px;">Current Soldiers</div>
+      <div class="col-sm-1 text-center" style="padding: 6px 0"
+        *ngFor="let item of isActivePlayer; let i = index; trackBy: trackByIndex">
+        <span *ngIf="item">{{ currentSoldiers[i] }}</span>
+      </div>
+    </div>
+    <div class="row" *ngIf="game != null">
+      <div class="col-sm-1">
+        <p>{{ this.game.currentTick }} / {{ this.gameConfig!.gameLength }}</p>
+        <button *ngIf="!isPlaying" class="btn btn-block btn-success" (click)="gameResume()">Resume</button>
+        <button *ngIf="!isPlaying" class="btn btn-block btn-primary" (click)="gameTick()">Tick</button>
+        <button *ngIf="!isPlaying" class="btn btn-block btn-primary" (click)="gameStep()">Step</button>
+        <button *ngIf="isPlaying" class="btn btn-block btn-danger" (click)="gamePause()">Pause</button>
+      </div>
+      <div class="col-sm-8" style="display: flex; align-items: center; flex-direction: column;">
+        <app-grid-renderer [grid]="game.grid!"></app-grid-renderer>
+      </div>
+    </div>
+  </div>
+</div>

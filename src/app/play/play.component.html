@@ -1,13 +1,16 @@
 <h3>Start new game</h3>
 <div class="form-group row">
   <label class="col-sm-2 col-form-label">Map</label>
-  <select class="form-control col-sm-3" [(ngModel)]="selectedMap" *ngFor="let gameMap of gameMaps">
+  <select class="form-control col-sm-2" [(ngModel)]="selectedMap" *ngFor="let gameMap of gameMaps">
     <option [value]="gameMap.id">{{ gameMap.description }} ({{ gameMap.gameMap.players.length }} players)</option>
   </select>
   <label class="col-sm-1 col-form-label">Ticks</label>
   <input type="number" class="form-control col-sm-2" [(ngModel)]="selectedLength">
-  <div>
-    <button class="btn btn-sm col-sm-2" (click)="playGame()">Play</button>
+  <div class="col-sm-1">
+    <button class="btn btn-success" (click)="playGame()">Play</button>
+  </div>
+  <div class="col-sm-2">
+    <button class="btn btn-info" (click)="loadLastConfig()">Load Last</button>
   </div>
 </div>
 <div class="form-group row">
@@ -24,4 +27,9 @@
   <ng-container *ngFor="let item of selectedBots; let i = index; trackBy: trackByIndex">
     <input type="number" class="form-control col-sm-1" [(ngModel)]="selectedNumInitialSoldiers[i]">
   </ng-container>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+    <app-game-manager [gameConfig]="gameConfig"></app-game-manager>
+  </div>
 </div>

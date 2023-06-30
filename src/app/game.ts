@@ -167,6 +167,7 @@ export interface GameConfig {
 export interface GameConfig_PlayerConfig {
   player: Player;
   numInitialSoldiers: number;
+  description: string;
   strategy: string;
   config: string;
 }
@@ -1344,7 +1345,7 @@ export const GameConfig = {
 };
 
 function createBaseGameConfig_PlayerConfig(): GameConfig_PlayerConfig {
-  return { player: 0, numInitialSoldiers: 0, strategy: "", config: "" };
+  return { player: 0, numInitialSoldiers: 0, description: "", strategy: "", config: "" };
 }
 
 export const GameConfig_PlayerConfig = {
@@ -1355,11 +1356,14 @@ export const GameConfig_PlayerConfig = {
     if (message.numInitialSoldiers !== 0) {
       writer.uint32(16).int32(message.numInitialSoldiers);
     }
+    if (message.description !== "") {
+      writer.uint32(26).string(message.description);
+    }
     if (message.strategy !== "") {
-      writer.uint32(26).string(message.strategy);
+      writer.uint32(34).string(message.strategy);
     }
     if (message.config !== "") {
-      writer.uint32(34).string(message.config);
+      writer.uint32(42).string(message.config);
     }
     return writer;
   },
@@ -1390,10 +1394,17 @@ export const GameConfig_PlayerConfig = {
             break;
           }
 
-          message.strategy = reader.string();
+          message.description = reader.string();
           continue;
         case 4:
           if (tag !== 34) {
+            break;
+          }
+
+          message.strategy = reader.string();
+          continue;
+        case 5:
+          if (tag !== 42) {
             break;
           }
 
@@ -1412,6 +1423,7 @@ export const GameConfig_PlayerConfig = {
     return {
       player: isSet(object.player) ? playerFromJSON(object.player) : 0,
       numInitialSoldiers: isSet(object.numInitialSoldiers) ? Number(object.numInitialSoldiers) : 0,
+      description: isSet(object.description) ? String(object.description) : "",
       strategy: isSet(object.strategy) ? String(object.strategy) : "",
       config: isSet(object.config) ? String(object.config) : "",
     };
@@ -1421,6 +1433,7 @@ export const GameConfig_PlayerConfig = {
     const obj: any = {};
     message.player !== undefined && (obj.player = playerToJSON(message.player));
     message.numInitialSoldiers !== undefined && (obj.numInitialSoldiers = Math.round(message.numInitialSoldiers));
+    message.description !== undefined && (obj.description = message.description);
     message.strategy !== undefined && (obj.strategy = message.strategy);
     message.config !== undefined && (obj.config = message.config);
     return obj;
@@ -1434,6 +1447,7 @@ export const GameConfig_PlayerConfig = {
     const message = createBaseGameConfig_PlayerConfig();
     message.player = object.player ?? 0;
     message.numInitialSoldiers = object.numInitialSoldiers ?? 0;
+    message.description = object.description ?? "";
     message.strategy = object.strategy ?? "";
     message.config = object.config ?? "";
     return message;

@@ -11,6 +11,11 @@ export class GameRunner {
   private playerStrategies: Map<proto.Player, Strategy>;
   private playerViews: Map<proto.Player, proto.Grid>;
 
+  private hasInitializedGame: boolean = false;
+  private hasBroadcastTick: boolean = false;
+  private tickNumber: number = 0;
+  private tickSequence: proto.Player[] = [];
+
   constructor(game: proto.Game, players: Map<proto.Player, Strategy>) {
     this.game = game;
     this.debugger = new GameDebugger;
@@ -26,21 +31,71 @@ export class GameRunner {
     }
   }
 
-  run() {
-    this.sendInitializeGame();
-    for (let tickNumber = 0; tickNumber < this.game.gameLength; ++tickNumber) {
-      this.executeTick(tickNumber);
-      if (this.remainingPlayers.length == 1) {
-        break;
+  step(): boolean {
+    if (!this.hasInitializedGame) {
+      this.sendInitializeGame();
+      this.hasInitializedGame = true;
+      this.tickNumber = 0;
+      return false;
+    }
+    if (this.tickNumber >= this.game.gameLength) {
+      return true;
+    }
+    if (this.remainingPlayers.length == 1) {
+      return true;
+    }
+
+    if (!this.hasBroadcastTick) {
+      ++this.tickNumber;
+      this.game.currentTick = this.tickNumber;
+      // Announce
+      for (const player of this.players) {
+        try {
+          this.playerStrategies.get(player)?.tick(this.tickNumber);
+        } catch (e) { }
       }
-      // Game end
-      if (tickNumber == this.game.gameLength - 1) {
-        // Determine winner
-        // Announce final tick
-        for (const player of this.players) {
-          this.playerStrategies.get(player)?.tick(this.game.gameLength);
+      // Shuffle
+      for (let i = 0; i < 30; ++i) {
+        let idx1 = Math.floor(Math.random() * this.remainingPlayers.length);
+        let idx2 = Math.floor(Math.random() * this.remainingPlayers.length);
+        [this.remainingPlayers[idx1], this.remainingPlayers[idx2]] = [this.remainingPlayers[idx2], this.remainingPlayers[idx1]];
+      }
+      this.tickSequence = [...this.remainingPlayers];
+      this.hasBroadcastTick = true;
+      if (this.tickNumber == this.game.gameLength) {
+        return true;
+      }
+      return false;
+    }
+
+    const nextPlayer = this.tickSequence.shift();
+    if (nextPlayer) {
+      if (this.remainingPlayers.indexOf(nextPlayer) === -1) {
+        return false;
+      }
+
+      try {
+        const move = this.playerStrategies.get(nextPlayer)?.performAction();
+        if (move) {
+          this.handleMove(nextPlayer, move);
         }
+      } catch (e) {
+
       }
+      this.sendGridUpdates();
+      return false;
+    }
+    // Spawn soldiers
+    this.mayBeSpawnSoldiers();
+    this.hasBroadcastTick = false;
+    return true;
+  }
+
+  debug(player: proto.Player) {
+    try {
+      this.playerStrategies.get(player)?.debug();
+    } catch (e) {
+
     }
   }
 
@@ -55,35 +110,11 @@ export class GameRunner {
         grid: this.playerViews.get(player),
         assignedColor: player
       });
-      this.playerStrategies.get(player)?.init(playerGame);
-    }
-  }
+      try {
+        this.playerStrategies.get(player)?.init(playerGame);
+      } catch (e) {
 
-  private executeTick(tickNumber: number): void {
-    this.game.currentTick = tickNumber;
-    // Announce
-    for (const player of this.players) {
-      this.playerStrategies.get(player)?.tick(tickNumber);
-    }
-    // Shuffle
-    for (let i = 0; i < 20; i++) {
-      let idx1 = Math.floor(Math.random() * this.remainingPlayers.length);
-      let idx2 = Math.floor(Math.random() * this.remainingPlayers.length);
-      [this.remainingPlayers[idx1], this.remainingPlayers[idx2]] = [this.remainingPlayers[idx2], this.remainingPlayers[idx1]];
-    }
-    // Act
-    for (const player of this.remainingPlayers) {
-      const move = this.playerStrategies.get(player)?.performAction();
-      if (move) {
-        this.handleMove(player, move);
       }
-      this.sendGridUpdates();
-    }
-    // Spawn soldiers
-    this.mayBeSpawnSoldiers(tickNumber);
-
-    if (tickNumber % 20 == 9) {
-      this.debugger.printGame(this.game);
     }
   }
 
@@ -198,13 +229,17 @@ export class GameRunner {
           }
         }
       }
-      this.playerStrategies.get(player)?.handleGridUpdate(proto.GridUpdate.create({ cellUpdates }));
+      try {
+        this.playerStrategies.get(player)?.handleGridUpdate(proto.GridUpdate.create({ cellUpdates }));
+      } catch (e) {
+
+      }
       this.playerViews.set(player, newFogOfWar);
     }
   }
 
-  private mayBeSpawnSoldiers(tickNumber: number): void {
-    if (tickNumber % 2 == 0) {
+  private mayBeSpawnSoldiers(): void {
+    if (this.tickNumber % 2 == 0) {
       return;
     }
     for (const player of this.remainingPlayers) {

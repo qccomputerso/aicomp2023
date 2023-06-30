@@ -84,8 +84,9 @@ message GameConfig {
   message PlayerConfig {
     Player player = 1;
     int32 num_initial_soldiers = 2;
-    string strategy = 3;
-    string config = 4;
+    string description = 3;
+    string strategy = 4;
+    string config = 5;
   }
   repeated PlayerConfig players = 1;
   GameMap game_map = 2;
