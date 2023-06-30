@@ -205,7 +205,7 @@ export class GameRunner {
         }
         if (isVisible) {
           const cell = grid.rows[i].cells[j];
-          row.push(proto.Cell.create({ isVisible: true, isMountain: cell.isMountain, isTower: cell.isTower, player: cell.player, numSoldiers: cell.numSoldiers }));
+          row.push(proto.Cell.create({ isKing: cell.isKing, isVisible: true, isMountain: cell.isMountain, isTower: cell.isTower, player: cell.player, numSoldiers: cell.numSoldiers }));
         } else {
           row.push(proto.Cell.create({ isVisible: false }));
         }
