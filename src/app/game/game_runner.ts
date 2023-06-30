@@ -218,7 +218,7 @@ export class GameRunner {
             if (cell.isKing) {
               king = { x, y };
             } else if (cell.isTower) {
-              ++cell.numSoldiers;
+              cell.numSoldiers += 2;
             }
           }
         }

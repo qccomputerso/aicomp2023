@@ -52,4 +52,26 @@ export class PlayComponent {
   trackByIndex(index: number, el: any): number {
     return index
   }
+
+  playGame() {
+    const gameMap = this.gameMaps[this.selectedMap];
+    const playerConfigs = [];
+    for (let i = 0; i < 8; ++i) {
+      if (this.selectedBots[i]) {
+        const bot = this.bots.find((botRow) => botRow.id == this.selectedBots[i])!;
+        const playerConfig = proto.GameConfig_PlayerConfig.create({
+          player: proto.playerFromJSON(i + 1),
+          numInitialSoldiers: this.selectedNumInitialSoldiers[i],
+          strategy: bot.strategy,
+          config: bot.config
+        });
+        playerConfigs.push(playerConfig)
+      }
+    }
+    const gameConfig = proto.GameConfig.create({
+      gameLength: this.selectedLength,
+      gameMap: this.gameMaps.find(({ id }) => id == this.selectedMap)!.gameMap,
+      players: playerConfigs
+    });
+  }
 }
