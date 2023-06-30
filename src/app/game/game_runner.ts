@@ -1,11 +1,9 @@
 import { Strategy } from "../strategy/strategy";
 import * as proto from "../game";
-import { GameDebugger } from "./game_debugger";
 
 export class GameRunner {
 
   private game: proto.Game;
-  private debugger: GameDebugger;
   private players: proto.Player[];
   private remainingPlayers: proto.Player[];
   private playerStrategies: Map<proto.Player, Strategy>;
@@ -18,7 +16,6 @@ export class GameRunner {
 
   constructor(game: proto.Game, players: Map<proto.Player, Strategy>) {
     this.game = game;
-    this.debugger = new GameDebugger;
     this.players = [];
     this.remainingPlayers = [];
     this.playerStrategies = new Map;

@@ -4,9 +4,7 @@ syntax = "proto3";
 protoc  --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=. ./src/app/game.proto
 */
 
-service StrategyService {
-  rpc Play(stream GameRequest) returns (stream GameResponse);
-}
+
 enum Player {
   INVALID = 0;
   BLUE = 1;
@@ -27,6 +25,7 @@ message Cell {
   bool is_tower = 5;
   bool is_visible = 6;
 }
+
 message Row {
   repeated Cell cells = 1;
 }

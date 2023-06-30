@@ -38,8 +38,6 @@ class SampleStrategy implements Strategy {
 
   tick(tickNumber: number) {
     this.game.currentTick = tickNumber;
-    if (tickNumber == this.game.gameLength) {
-    }
   }
 
   handleGridUpdate(gridUpdate: proto.GridUpdate): void {
