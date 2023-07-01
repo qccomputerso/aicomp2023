@@ -31,6 +31,24 @@ interface CustomGridState {
 	isPriority: boolean;
 }
 
+function shuffle<T>(array: T[]): T[] {
+	let currentIndex = array.length, randomIndex;
+
+	// While there remain elements to shuffle.
+	while (currentIndex != 0) {
+
+		// Pick a remaining element.
+		randomIndex = Math.floor(Math.random() * currentIndex);
+		currentIndex--;
+
+		// And swap it with the current element.
+		[array[currentIndex], array[randomIndex]] = [
+			array[randomIndex], array[currentIndex]];
+	}
+
+	return array;
+}
+
 class TestStrategy implements Strategy {
 	private game: proto.Game = proto.Game.create();
 	private grid: proto.Grid = proto.Grid.create();
@@ -153,12 +171,19 @@ class TestStrategy implements Strategy {
 			) {
 				found = true;
 				target = { ...u };
+				if (ignoreTarget) console.log(target);
 				break;
 			}
+			const BFSOrder = shuffle([
+				[0, 1],
+				[1, 0],
+				[0, -1],
+				[-1, 0],
+			]);
 			for (let i = 0; i < 4; i++) {
 				const v = {
-					x: u.x + [0, 1, 0, -1][i],
-					y: u.y + [1, 0, -1, 0][i],
+					x: u.x + BFSOrder[i][0],
+					y: u.y + BFSOrder[i][1],
 				};
 				if (visited[v.x][v.y]) continue;
 				const cell = this.grid.rows[v.x].cells[v.y];
@@ -200,14 +225,14 @@ class TestStrategy implements Strategy {
 		if (!possibleCoordinates.length) {
 			return null;
 		}
-		if (size >= 20 || this.game.currentTick > 50 || this.quadrant === Quadrant.DANGER) {
+		if (size >= 32 || this.game.currentTick > 100) {
 			this.currentBFScoord = maxSoldierPos;
 			const next = this.BFSUpdate(true, true);
 			if (!next) return null;
 			return {
 				moveFrom: { ... this.currentBFScoord },
 				moveTo: { ...next },
-				numSoldiersMoved: maxSoldiers - 1,
+				numSoldiersMoved: Math.min(maxSoldiers - 1, Math.floor(maxSoldiers / 2)),
 			};
 		}
 		for (let i = 0; i < this.quadrantPriority.length; i++) {
