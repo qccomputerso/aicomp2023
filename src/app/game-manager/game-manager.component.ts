@@ -25,7 +25,7 @@ export class GameManagerComponent {
   gameRunner: GameRunner | null = null;
 
   constructor(private message: MessageService) {
-    const timerSource = timer(0, 10);
+    const timerSource = timer(0, 1);
     timerSource.subscribe(() => {
       this.autoplay();
     });
