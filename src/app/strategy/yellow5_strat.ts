@@ -250,7 +250,8 @@ class TestStrategy implements Strategy {
 					}
 				}
 				if (isOnBorder) continue;
-				if (cell.player !== this.game.assignedColor && cell.numSoldiers >= 100) {
+				const kingCell = this.grid.rows[this.king.x].cells[this.king.y];
+				if (cell.player !== this.game.assignedColor && cell.numSoldiers >= kingCell.numSoldiers / 2) {
 					enemy = { x, y };
 					numSoldiers = cell.numSoldiers;
 					break;
@@ -349,8 +350,6 @@ class TestStrategy implements Strategy {
 		if (!possibleCoordinates.length) {
 			return null;
 		}
-		const defenseRequired = this.BFSDefend();
-		if (defenseRequired) return defenseRequired;
 		if (this.attackKing !== null) {
 			if (this.getMobileSoldiers(
 				this.currentBFScoord.x,
