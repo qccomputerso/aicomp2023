@@ -1,3 +1,9 @@
+/*** STRATEGY VERSION 3 ***/
+// New features:
+// Prioritizes enemy 1-cells
+// Reduced start waiting times
+// Aggressively attack kings
+
 import { Strategy } from './strategy'
 import * as proto from '../game'
 import { GameDebugger } from '../game/game_debugger';
@@ -18,6 +24,10 @@ enum MovePriority {
 type TestStrategyOptions = {
 	movePriority?: MovePriority,
 };
+
+enum Quadrant {
+	LU = 0, RU = 1, LD = 2, RD = 3, DANGER = 4
+}
 
 function coordsEq(a: proto.Coordinates, b: proto.Coordinates) {
 	return a.x === b.x && a.y === b.y;
@@ -53,10 +63,18 @@ class TestStrategy implements Strategy {
 	private king: proto.Coordinates = { x: 0, y: 0 };
 	private currentBFScoord: proto.Coordinates = { x: 0, y: 0 };
 	private BFSTarget: proto.Coordinates | null = null;
+	private quadrant: Quadrant = Quadrant.DANGER;
+	private quadrantPriority: proto.Coordinates[] = [];
 	private debugger: GameDebugger = new GameDebugger;
 	private options: TestStrategyOptions;
 	private totalSoldiers: number = 0;
 	private attackKing: proto.Coordinates | null = null;
+	private BFSOrder = shuffle([
+		[0, 1],
+		[1, 0],
+		[0, -1],
+		[-1, 0],
+	]);
 
 	constructor(options: TestStrategyOptions = {
 		movePriority: MovePriority.NONE,
@@ -80,6 +98,56 @@ class TestStrategy implements Strategy {
 					backtrace: { x: 0, y: 0 },
 				};
 			}
+		}
+		const effHeight = game.height - 2, effWidth = game.width - 2;
+		const effKingR = this.king.x - 1, effKingC = this.king.y - 1;
+		if (
+			(effKingR >= Math.floor(effHeight / 4) && effKingR <= effHeight - Math.floor(effHeight / 4)) &&
+			(effKingC >= Math.floor(effWidth / 4) && effKingC <= effWidth - Math.floor(effWidth / 4))
+		) {
+			this.quadrant = Quadrant.DANGER;
+			return;
+		}
+
+		this.quadrant = Number(effKingR >= effHeight / 2) * 2 + Number(effKingC >= effWidth / 2);
+		const lesserPriority = [];
+		switch (this.quadrant) {
+			case Quadrant.LU: case Quadrant.RU:
+				for (let x = 1; x < Math.floor(game.height / 2 - 1); x++) {
+					let y = Math.floor(game.height / 2 - 1) - x;
+					if (this.quadrant == Quadrant.RU) y = game.width - y;
+					this.quadrantPriority.push({
+						x,
+						y,
+					});
+					if (this.quadrant == Quadrant.LU) {
+						for (let yp = 0; yp < y; yp++) lesserPriority.push({ x, y: yp });
+					} else {
+						for (let yp = game.width - 1; yp > y; yp--) lesserPriority.push({ x, y: yp });
+					}
+				}
+				break;
+			case Quadrant.LD: case Quadrant.RD:
+				for (let fakex = 1; fakex < Math.floor(game.height / 2 - 1); fakex++) {
+					const x = game.height - fakex;
+					let y = Math.floor(game.height / 2 - 1) - fakex;
+					if (this.quadrant == Quadrant.RD) y = game.width - y;
+					this.quadrantPriority.push({
+						x,
+						y,
+					});
+					if (this.quadrant == Quadrant.LD) {
+						for (let yp = 0; yp < y; yp++) lesserPriority.push({ x, y: yp });
+					} else {
+						for (let yp = game.width - 1; yp > y; yp--) lesserPriority.push({ x, y: yp });
+					}
+				}
+				break;
+		}
+		this.BFSTarget = this.quadrantPriority[0];
+		this.quadrantPriority = [...this.quadrantPriority, ...lesserPriority];
+		for (const pos of this.quadrantPriority) {
+			this.customGrid[pos.x][pos.y].isPriority = true;
 		}
 	}
 
@@ -107,7 +175,7 @@ class TestStrategy implements Strategy {
 		cantVisit: (cell: proto.Cell, coords?: proto.Coordinates) => boolean,
 		start = [this.currentBFScoord],
 		returnReverse = false
-	): [proto.Coordinates, proto.Coordinates] | null {
+	): [proto.Coordinates, proto.Coordinates] | [null, null] {
 		const queue: proto.Coordinates[] = [...start];
 		const visited = Array.from(Array(this.game.height), () => Array<boolean>(this.game.width).fill(false));
 		let found = false;
@@ -121,16 +189,10 @@ class TestStrategy implements Strategy {
 				target = { ...u };
 				break;
 			}
-			const BFSOrder = shuffle([
-				[0, 1],
-				[1, 0],
-				[0, -1],
-				[-1, 0],
-			]);
 			for (let i = 0; i < 4; i++) {
 				const v = {
-					x: u.x + BFSOrder[i][0],
-					y: u.y + BFSOrder[i][1],
+					x: u.x + this.BFSOrder[i][0],
+					y: u.y + this.BFSOrder[i][1],
 				};
 				if (visited[v.x][v.y]) continue;
 				const cell = this.grid.rows[v.x].cells[v.y];
@@ -141,7 +203,7 @@ class TestStrategy implements Strategy {
 			}
 		}
 		if (!found) {
-			return null;
+			return [null, null];
 		}
 		let pos = { ...target };
 		for (const startPos of start) {
@@ -157,26 +219,72 @@ class TestStrategy implements Strategy {
 		return [pos, { ...target }];
 	}
 
-	BFSUpdate(): proto.Coordinates | null {
-		const pos = this.BFSframework(
-			cell => (cell.player !== this.game.assignedColor) && cell.numSoldiers <= 10,
-			cell => cell.numSoldiers > 6 && cell.player !== this.game.assignedColor && cell.player !== 0
+	BFSUpdate(ignoreTarget: boolean, anyUnoccupied = false): proto.Coordinates | null {
+		if (!ignoreTarget && !this.BFSTarget) return null;
+		const [pos] = this.BFSframework(
+			(cell, pos) => (!ignoreTarget && coordsEq(pos, this.BFSTarget!)) ||
+				(ignoreTarget && this.customGrid[pos.x][pos.y].isPriority && cell.player !== this.game.assignedColor) ||
+				(anyUnoccupied && cell.player !== this.game.assignedColor),
+			cell => cell.isTower && cell.player !== this.game.assignedColor && !anyUnoccupied
 		);
-		return pos === null ? null : pos[0];
+		return pos;
 	}
-	BFSprioritiseTowers() {
-		let towerList: proto.Coordinates[] = [];
-		for (let x = 0; x < this.game.height; x++) {
-			for (let y = 0; y < this.game.width; y++) {
+	BFSDefend(): proto.Move | null {
+		let enemy: proto.Coordinates | null = null;
+		let numSoldiers = 0;
+		for (let x = 1; x < this.game.height - 1; x++) {
+			if (enemy) break;
+			for (let y = 1; y < this.game.width - 1; y++) {
 				const cell = this.grid.rows[x].cells[y];
-				if (cell.isTower && cell.player === 0) towerList.push({ x, y });
+				const adj = [
+					{ x, y: y - 1 },
+					{ x, y: y + 1 },
+					{ x: x - 1, y },
+					{ x: x + 1, y },
+				];
+				let isOnBorder = false;
+				for (let i = 0; i < 4; i++) {
+					if (!this.grid.rows[adj[i].x].cells[adj[i].y].isVisible) {
+						isOnBorder = true;
+						break;
+					}
+				}
+				if (isOnBorder) continue;
+				if (cell.player !== this.game.assignedColor && cell.numSoldiers >= 100) {
+					enemy = { x, y };
+					numSoldiers = cell.numSoldiers;
+					break;
+				}
 			}
 		}
-		return this.BFSframework(
-			cell => cell.player === this.game.assignedColor && cell.numSoldiers >= 22,
+		if (!enemy) return null;
+		let divisor = 4;
+		let result = this.BFSframework(
+			cell => cell.player === this.game.assignedColor && cell.numSoldiers >= numSoldiers / 4,
 			cell => !cell.isVisible,
-			towerList,
+			[enemy],
 			true
+		);
+		while (!result[0]) {
+			divisor *= 2;
+			result = this.BFSframework(
+				cell => cell.player === this.game.assignedColor && cell.numSoldiers >= numSoldiers / divisor,
+				cell => !cell.isVisible,
+				[enemy],
+				true
+			);
+		}
+		const cell = this.grid.rows[result[1].x].cells[result[1].y];
+		return {
+			moveFrom: result[1],
+			moveTo: result[0],
+			numSoldiersMoved: cell.numSoldiers - 1
+		};
+	}
+	BFSprioritiseTowers() {
+		return this.BFSframework(
+			cell => cell.isTower && cell.numSoldiers <= 20 && cell.player !== this.game.assignedColor,
+			cell => !cell.isVisible
 		);
 	}
 	BFSprioritiseEnemyOnes(cellHealth: number) {
@@ -198,6 +306,12 @@ class TestStrategy implements Strategy {
 		return this.getMobileSoldiers(x, y) * (1 + (Math.abs(x - this.king.x) + Math.abs(y - this.king.y)) * 0.1);
 	}
 	performAction(): proto.Move | null {
+		if (this.game.currentTick % 20 === 0) this.BFSOrder = shuffle([
+			[0, 1],
+			[1, 0],
+			[0, -1],
+			[-1, 0],
+		]);
 		const possibleCoordinates = [];
 		let size = 0;
 		let maxSoldiers = 0;
@@ -235,22 +349,24 @@ class TestStrategy implements Strategy {
 		if (!possibleCoordinates.length) {
 			return null;
 		}
+		const defenseRequired = this.BFSDefend();
+		if (defenseRequired) return defenseRequired;
 		if (this.attackKing !== null) {
 			if (this.getMobileSoldiers(
 				this.currentBFScoord.x,
 				this.currentBFScoord.y
 			) * 2 < maxSoldiers) this.currentBFScoord = maxSoldierPos;
 
-			const next = this.BFSUpdate();
+			const next = this.BFSUpdate(true, true);
 			if (!next) return null;
-			const res = this.BFSframework(
+			const [res] = this.BFSframework(
 				(_, pos) => coordsEq(this.attackKing!, pos),
 				() => false
 			);
 			const from = { ...this.currentBFScoord };
 			if (res) return {
 				moveFrom: from,
-				moveTo: { ...res[0] },
+				moveTo: { ...res },
 				numSoldiersMoved: maxSoldiers,
 			}
 			this.currentBFScoord = { ...next };
@@ -260,43 +376,68 @@ class TestStrategy implements Strategy {
 				numSoldiersMoved: maxSoldiers,
 			};
 		}
-		if (this.getMobileSoldiers(
-			this.currentBFScoord.x,
-			this.currentBFScoord.y
-		) * 2 < maxSoldiers) this.currentBFScoord = maxSoldierPos;
-		const next = this.BFSUpdate();
-		if (!next) return null;
-		const aggress = Math.floor(this.game.currentTick / 10) % 5 < 2;
-		if ((size >= 32 && aggress) || !hasEmpty) {
-			const enemyLowHealth = this.BFSprioritiseEnemyOnes(maxSoldiers);
-			if (enemyLowHealth) {
-				const from = { ...this.currentBFScoord };
-				this.currentBFScoord = { ...enemyLowHealth[0] };
-				return {
-					moveFrom: from,
-					moveTo: { ...enemyLowHealth[0] },
-					numSoldiersMoved: maxSoldiers,
+		if (this.game.currentTick > 10 || this.quadrant === Quadrant.DANGER) {
+			if (this.getMobileSoldiers(
+				this.currentBFScoord.x,
+				this.currentBFScoord.y
+			) * 2 < maxSoldiers) this.currentBFScoord = maxSoldierPos;
+			const next = this.BFSUpdate(true, true);
+			if (!next) return null;
+			const aggress = Math.floor(this.game.currentTick / 10) % 5 < 2;
+			if ((size >= 32 && aggress) || !hasEmpty) {
+				const [enemyLowHealth] = this.BFSprioritiseEnemyOnes(maxSoldiers);
+				if (enemyLowHealth) {
+					const from = { ...this.currentBFScoord };
+					this.currentBFScoord = { ...enemyLowHealth };
+					return {
+						moveFrom: from,
+						moveTo: { ...enemyLowHealth },
+						numSoldiersMoved: maxSoldiers,
+					}
 				}
 			}
-		}
-		if (maxSoldiers > 21) {
-			const tower = this.BFSprioritiseTowers();
-			console.log(tower)
-			if (tower) {
-				const from = tower[1];
-				return {
-					moveFrom: from,
-					moveTo: { ...tower[0] },
-					numSoldiersMoved: 21,
+			if (maxSoldiers > 21) {
+				const [tower] = this.BFSprioritiseTowers();
+				if (tower) {
+					const from = { ...this.currentBFScoord };
+					this.currentBFScoord = { ...tower };
+					return {
+						moveFrom: from,
+						moveTo: { ...tower },
+						numSoldiersMoved: maxSoldiers,
+					}
 				}
 			}
+			const from = { ...this.currentBFScoord };
+			this.currentBFScoord = { ...next };
+			return {
+				moveFrom: from,
+				moveTo: { ...next },
+				numSoldiersMoved: maxSoldiers,
+			};
 		}
-		const from = { ...this.currentBFScoord };
-		this.currentBFScoord = { ...next };
+		for (let i = 0; i < this.quadrantPriority.length; i++) {
+			this.BFSTarget = this.quadrantPriority[i];
+			let bfsResult = this.BFSUpdate(false);
+			while (!bfsResult && this.quadrantPriority.length && this.BFSTarget) {
+				this.quadrantPriority.splice(i, 1);
+				this.BFSTarget = this.quadrantPriority[i];
+				bfsResult = this.BFSUpdate(false);
+			}
+		}
+		if (this.grid.rows[this.currentBFScoord.x].cells[this.currentBFScoord.y].numSoldiers < 2) {
+			this.currentBFScoord = { ...this.king };
+			if (this.grid.rows[this.currentBFScoord.x].cells[this.currentBFScoord.y].numSoldiers < 2)
+				return null;
+		}
+		let bfsResult = this.BFSUpdate(true);
+		if (!bfsResult) return null;
+		const from = { ... this.currentBFScoord };
+		this.currentBFScoord = bfsResult!;
 		return {
 			moveFrom: from,
-			moveTo: { ...next },
-			numSoldiersMoved: maxSoldiers,
+			moveTo: { ...bfsResult! },
+			numSoldiersMoved: this.grid.rows[from.x].cells[from.y].numSoldiers - 1
 		};
 	}
 
